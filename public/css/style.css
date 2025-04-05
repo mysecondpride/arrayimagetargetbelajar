@@ -1,0 +1,270 @@
+body {
+    background-color: aquamarine;
+}
+/* 
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+} */
+
+.footer {
+    background-color: #007bff;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    margin-top: 20px;
+}
+
+img{
+    width: 100%; 
+    height: auto
+}
+
+a{color:var(--black)};
+h1{font-size:var(--font-size-xl)}
+h2{font-size:var(--font-size-lg)}
+h2{font-size:var(--font-size-md)}
+
+
+container{
+    max-width:982 px;
+    margin:0 auto;
+    padding: 0 px;
+}
+
+
+
+.main{
+    padding:20px 0
+}
+.searchBar{
+    visibility:hidden;
+    transform:translateY(-100px);
+    background-color: var(--black);
+    padding:4px 0;
+    position:absolute;
+    left:0;
+    right:0;
+}
+
+.searchBar.open{
+    transform:translateY(0);
+    transition: transform 0.1s;
+
+}
+
+.searchBar input{
+margin:0;
+padding:0;
+}
+
+
+#searchClose{
+    position: absolute;
+    top:0;
+    right:0;
+    color:var(--gray-light);
+    padding:15px
+}
+
+.header{
+    display:grid;
+    align-items: center;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    padding-top:10 px;
+    grid-template-areas: 
+    "logo button"
+    "menu menu";
+
+}
+
+@media only screen and (min-width: 768px){
+    .header{
+        grid-template-columns: auto 1fr auto;
+        grid-template-areas: 
+        "logo menu button";
+}}
+
+.header__logo{
+    grid-area: logo;
+    font-weight: 800;
+    font-size: 25px;
+    text-decoration: none;
+
+}
+
+.header__logo:hover{
+text-decoration: underline;
+}
+
+.header__nav{
+    grid-area: menu;
+    display:flex;
+  align-items: left;
+ 
+}
+
+.header__button{
+    grid-area: button;
+    display:flex;
+    justify-content: end;
+
+
+}
+
+.header__button button{
+    display: flex;
+    gap:0.3 rem;
+    align-items:center;
+    border:0;
+    padding:16px 12px;
+    background: none;
+    border-radius: var(--border-radius);
+    border:2px solid transparent;
+    font-weight: 600;
+    color:var(--black)
+
+}
+.header__button button:hover{
+    border:2px solid var(--black)
+}
+
+.header__nav ul{
+    list-style-type: none;
+    display: flex;
+    gap:1rem;
+    font-weight: 600;
+    padding:0;
+ 
+ 
+}
+.header__nav ul a:hover{
+    padding:10px;
+    transition: all 0.3s ease;
+    
+}
+
+.header__nav ul a.active{
+    color:var(--gray)
+}
+
+/* author of the homepage */
+.author__heading{
+    margin-top: 10px;
+    margin-bottom: 5px;
+
+}
+
+.author__body{
+    font-size: var(--font-size-md);
+    margin:5px 0 40px 0
+}
+
+/* ARTICLE LIST*/
+.article__heading{
+    margin-top:4 rem;
+    font-weight:400;
+
+}
+
+.article__ul{
+
+    list-style-type: none;
+    padding:0;
+    margin:0;
+    font-size: clamp(1.13rem, calc(1.08rem+0.22vw), 1.25rem);
+    display:flex;
+    flex-direction: column;
+}
+
+.article-list__data{
+    font-size:var(--font-size-base);
+    color:var(--gray);
+    width:260px;
+    display:inline-block
+
+}
+
+.article-ul li a{
+    display:flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-decoration: none;
+    margin:10px 0;
+
+}
+@media only screen and (min-width: 768px){
+    .article-ul li a{
+        flex-direction: row;
+        align-items: center;
+
+}
+.article-list__data{
+    text-align: right;
+}
+}
+
+/* pagination */
+.pagination{
+    font-size: 1.3rem;
+    color:var(--black);
+    text-decoration: none;
+    margin-top: 40px;
+    display:inline-block
+}
+
+.pagination:hover{
+    color:var(--black)
+
+}
+
+.header__button{
+    display: flex;
+    flex-direction: column;
+}
+.searchBtn {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Adjust space between text and icon */
+  }
+  
+  .searchBtn svg {
+    vertical-align: middle;
+  }
+
+  /* .header__main{
+    display: flex;
+    justify-content: space-between;
+} */
+
+.admin-title{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* admin post */
+.admin-post-control from{
+    display:inline-block
+}
+.admin-post-control .btn{
+    display: inline-block;
+    background-color: var(--black);
+    color:var(--gray-light);
+    border:0;
+    text-decoration: none;
+    font-size: .8rem;
+    padding:4px 8px;
+    line-height: 2;
+
+}
+
+.admin-post li{
+    display:flex;
+    justify-content: space-between;
+    padding:10px 0
+
+}

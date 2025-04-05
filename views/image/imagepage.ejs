@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Images</title>
+  </head>
+  <body>
+    <h1>Image Gallery</h1>
+    <% items.forEach(item => { %>
+    <img src="<%= item.fileUrl %>" alt="Image" />
+    <% }) %>
+  </body>
+</html>

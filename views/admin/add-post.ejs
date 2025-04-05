@@ -1,0 +1,54 @@
+<form action="/add-post" method="POST" class="form">
+  <div class="form add-post1">
+    <label for="title" class="form-label">Judul</label>
+    <input
+      type="text"
+      id="title"
+      name="title"
+      class="form-control"
+      placeholder="Tulis judulnya"
+      required
+    />
+  </div>
+  <div class="form add-post2">
+    <label for="body" class="form-label">Artikel</label>
+    <textarea
+      id="body"
+      name="body"
+      class="form-control"
+      rows="10"
+      cols="50"
+      placeholder="Tulis artikelnya"
+      required
+    ></textarea>
+  </div>
+
+  <button type="submit" class="submit-post">Tambah Post</button>
+</form>
+
+  <h2>Upload Image</h2>
+  <form
+    id="uploadForm"
+    action="/upload"
+    method="POST"
+    enctype="multipart/form-data"
+  >
+    <div class="mb-3">
+      <label for="file" class="form-label"
+        ><i class="bi bi-cloud-upload"></i> Select Image</label
+      >
+      <input
+        type="file"
+        class="form-control"
+        id="file"
+        name="file"
+        required
+     
+      />
+    </div>
+
+    <input type="submit" class="btn btn-primary">Upload</input>
+  </form>
+
+
+</div>
