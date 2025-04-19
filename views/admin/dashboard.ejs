@@ -1,20 +1,16 @@
-<div class="admmin-title">
-  <h2>ini dashboardmu ya brey--as a admin</h2>
+<div class="admin-title">
+  <h2>ini dashboardmu ya brey--as an admin</h2>
   <a href="/add-post" class="button">add new post brey</a>
 </div>
 
 <ul class="admin-post">
-
   <% data.forEach((post) => { %>
   <li>
-    <a href="/post-article/<%= post._id %>"> <%= post.title %> &nearr; </a>
+    <a href="/post-article/<%= post._id %>"><%= post.title %></a>
     <div>
       <form action="/edit-post/<%= post._id %>" method="get">
-        <input type="submit" value="edit">
-      
-      </input>
+        <input type="submit" value="edit" />
       </form>
-
     </div>
   </li>
   <% }) %>

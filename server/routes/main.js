@@ -1,6 +1,17 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const Post = require("../models/Post");
+const Grid = require("gridfs-stream");
+// const Gf = require("../../utils/gridStream");
+const { GridFSBucket } = require("mongodb");
+const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/blogBnB");
+let gfs;
+
+conn.once("open", function () {
+  gfs = Grid(conn.db, mongoose.mongo);
+});
+
 router.get("/", async (req, res) => {
   const locals = {
     title: "GadgetBase",
@@ -30,19 +41,27 @@ router.get("/about", (req, res) => {
 });
 
 router.get("/post/:id", async (req, res) => {
-  try {
-    const locals = {
-      title: "GadgetBase",
-      description: "ulasan | smartphone terbaru | pengalaman ",
-    };
-    const slug = req.params.id;
-    const data = await Post.findById({ _id: slug });
+  const locals = {
+    title: "GadgetBase",
+    description: "ulasan | smartphone terbaru | pengalaman ",
+  };
+  const slug = req.params.id;
+  const data = await Post.findById(slug);
 
-    res.render("post", { locals, data });
-  } catch (error) {
-    console.log(error);
-  }
+  res.render("post", { locals, data });
 });
+
+// router.get("/files", (req, res) => {
+//   gfs.findOne(
+//     { filename: "5575638e1fb9c23f0df83e7c5d1931b6.jpg" },
+//     (err, files) => {
+//       if (!files || files.length === 0) {
+//         return res.status(404).json({ err: "no file exist" });
+//       }
+//       return res.json(files);
+//     }
+//   );
+// });
 
 //Post
 //Post:searchTerm

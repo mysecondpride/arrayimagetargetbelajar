@@ -1,19 +1,25 @@
 const express = require("express");
-
+const fs = require("fs");
 const router = express.Router();
 const Post = require("../models/Post");
 const User = require("../models/User");
 const layoutAdmin = "../views/layouts/admin";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-// const grid=require('gridfs-stream')
+const Grid = require("gridfs-stream");
 const methodOverride = require("method-override");
-const { upload } = require("../../utils/gridFs"); // Import GridFS upload
-const { conn } = require("../../utils/gridFs");
+const upload = require("../../utils/gridFs"); // Import GridFS upload
 const jwtSecret = process.env.JWT_SECRET;
-const { getGFS } = require("../config/db");
+var mongoose = require("mongoose");
+const { log } = require("console");
+const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/blogBnB");
+const { ObjectId } = require("mongodb");
 let gfs;
 
+conn.once("open", function () {
+  gfs = Grid(conn.db, mongoose.mongo);
+  gfs.collection("upload");
+});
 /* GET */
 /* admin-loginpage */
 
@@ -104,7 +110,9 @@ router.post("/register", async (req, res) => {
 router.get("/dashboard", authMiddleware, async (req, res) => {
   //fungsi authMiddleware melindungi ketika sesion habis, token tidak permanen
   try {
-    const data = await Post.find();
+    const data = await Post.find({});
+    console.log(data);
+
     res.render("admin/dashboard", { data });
   } catch (error) {
     console.log("error", error);
@@ -121,21 +129,88 @@ router.get("/add-post", authMiddleware, async (req, res) => {
     console.log("error", error);
   }
 });
-router.post("/add-post", authMiddleware, async (req, res) => {
-  //fungsi authMiddleware melindungi ketika sesion habis, token tidak permanen
 
+router.get("/post-article/:id", authMiddleware, async (req, res) => {
   try {
-    const { body, title } = req.body;
-    const newPost = new Post({ body, title });
-    const data = await newPost.save();
-    res.render("admin/dashboard", { data });
+    const articleId = req.params.id;
+    const data = await Post.findById(articleId)
+      .populate({ path: "imageFileId", strictPopulate: false })
+      .exec((err, post) => {
+        if (err) {
+          console.log(err);
+          res.redirect("/post");
+        } else {
+          res.status(200).json({ message: data });
+        }
+      });
+
+    // res.render("admin/post-article", { layout: layoutAdmin, data });
   } catch (error) {
     console.log("error", error);
   }
 });
 
-router.post("/upload", upload.single("file"), (req, res) => {
-  res.json({ file: req.file });
+//admin
+router.get("/image/:id", (req, res) => {
+  try {
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: "upload",
+    });
+
+    const fileId = new mongoose.Types.ObjectId(req.params.id);
+    const stream = bucket.openDownloadStream(fileId);
+
+    stream.on("file", (file) => {
+      // Set correct content type
+      res.set("Content-Type", file.contentType || "image/jpeg");
+    });
+
+    stream.on("error", (err) => {
+      console.error("Stream error:", err.message);
+      res.status(404).json({ message: "File not found" });
+    });
+
+    stream.pipe(res);
+  } catch (err) {
+    console.error("Route error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/add-post", upload.single("utama"), async (req, res) => {
+  console.log("Uploaded file:", req.file); // Add this line
+
+  const { title, body } = req.body;
+  try {
+    if (!title || !body || req.file) {
+      // return res
+      //   .status(400)
+      //   .json({ error: "image, title, body are required." });
+      console.log("ojo lali ngisi file yo");
+    }
+
+    const ost = new Post({
+      title,
+      body,
+      imageFileId: req.file._id, //ketika diganti file ini bson yang salah
+    });
+    await ost.save();
+    res.json({ message: "Blog created!", ost: ost });
+  } catch (err) {
+    console.error(err);
+    res
+      .status(500)
+      .json({ error: "Something went wrong while creating the blog post." });
+  }
+});
+
+router.get("/files", async (req, res) => {
+  try {
+    let files = await gfs.files.find().toArray();
+    res.json({ files });
+  } catch (err) {
+    res.json({ err });
+  }
 });
 
 /* get to Edit */
@@ -192,81 +267,6 @@ router.put("/edit-post/:id", authMiddleware, async (req, res) => {
     res.redirect(`/edit-post/${req.params.id}`);
   } catch (error) {
     res.status(500).send("Error updating post");
-  }
-});
-
-//mencoba to change to array-- sayang sekali gfsnya tidak ada disini, tapi sudah dibetulin
-router.get("/files", async (req, res) => {
-  try {
-    gfs = getGFS(); // Get GridFS instance
-    const files = await gfs.collection("uploads").find().toArray();
-
-    if (!files || files.length === 0) {
-      return res.status(404).json({ err: "No files exist" });
-    }
-
-    res.json(files);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-// get filename of the file image just findOne
-
-router.get("/files/:filename", async (req, res) => {
-  try {
-    const gfs = getGFS(); // Get GridFS instance
-    const files = await gfs
-      .collection("uploads")
-      .findOne({ filename: req.params.filename }, (err, file) => {
-        if (!file || file.length === 0) {
-          return res.status(404).json({
-            err: " no file exist",
-          });
-        }
-        return res.json;
-      });
-
-    if (!files || files.length === 0) {
-      return res.status(404).json({ err: "No files exist" });
-    }
-
-    res.json(files);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-//Display an image with createReadStream
-const { GridFSBucket } = require("mongodb");
-
-router.get("/image/:filename", async (req, res) => {
-  try {
-    const gfs = getGFS(); // Get GridFS instance
-
-    // Find file metadata
-    const file = await gfs
-      .collection("uploads")
-      .findOne({ filename: req.params.filename });
-
-    if (!file) {
-      return res.status(404).json({ err: "No file exists" });
-    }
-
-    // Check if it's an image
-    if (!file.contentType.startsWith("image/")) {
-      return res.status(400).json({ err: "Not an image file" });
-    }
-
-    // Use GridFSBucket for streaming
-    const bucket = new GridFSBucket(gfs.db, { bucketName: "uploads" });
-    const readstream = bucket.openDownloadStreamByName(file.filename);
-    readstream.pipe(res);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ err: "Server error" });
   }
 });
 

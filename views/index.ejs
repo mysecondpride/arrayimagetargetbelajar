@@ -1,28 +1,35 @@
 
-    <div class="author">
-      <h1 class="author__heading">Selamat datang di BnB Blog</h1>
-      <p class="author__body">Blog yang membahas tentang smartphone, tablet dan teknologi digital</p>
-      <img src="/img/apple.jpg" alt="apple" width="528" height="758" />
-      <section class="articles">
-        <h2 class="articles__heading">Latest Post</h2>
-        <ul class="artocle-ul">
-          <% data.forEach(element => { %>
+<div class="author">
+  <h1 class="author__heading">Selamat datang di BnB Blog</h1>
+  <p class="author__body">Blog yang membahas tentang smartphone, tablet dan teknologi digital</p>
+  <img src="/img/apple.jpg" alt="apple" width="528" height="758" />
+  <section class="articles">
+    <h2 class="articles__heading">Latest Post</h2>
 
-          <li>
-            <a href="/post/<%= element._id %>"
-              <span><%= element.title %></span>
-              <span class="article-list__date" ><%= element. createdAt.toDateString() %></span>
-            </a>
-          </li>
-          <% }) %>
-        </ul> 
 
-        <% if (nextPage !==null) { %>
-        <a href="/?page=<%= nextPage %>" class="pagination"
-          >&lt view older post</a
-        >
+    <% if (data.length === 0) { %>
+      <p>No posts yet. Please check back later!</p>
+    <% } else { %>
+      <ul class="artocle-ul">
+        <% data.forEach(element => { %>
+        <li>
+          <a href="/post/<%= element._id %>"
+            <span><%= element.title %></span>
+          </a>
+          <span><%= element.createdAt.toString() %></span>
+        </li>
 
-        <% } %>
-      </section>
-    </div>
 
+        <% }) %>
+      </ul> 
+  
+    <% } %>
+    
+    <% if (nextPage !==null) { %>
+    <a href="/?page=<%= nextPage %>" class="pagination"
+      >&lt view older post</a
+    >
+
+    <% } %>
+  </section>
+</div>

@@ -1,26 +1,25 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const PostSchema = new Schema({
+const Post = new Schema({
+  id: {
+    type: mongoose.Types.ObjectId,
+  },
   title: {
     type: String,
-    required: true,
+    // required: true,
   },
   body: {
     type: String,
-    required: true,
+    // required: true,
   },
-  {
-    data: Buffer,
-    contentType: String
-},
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now, // sets the current date/time when the post is created
   },
-  updateddAt: {
-    type: Date,
-    default: Date.now,
+  imageFileId: {
+    type: Schema.Types.ObjectId,
+    ref: "upload.files",
   },
 });
 
-module.exports = mongoose.model("Post", PostSchema);
+module.exports = mongoose.model("Post", Post);

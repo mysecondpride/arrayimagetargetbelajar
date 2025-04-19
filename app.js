@@ -1,10 +1,11 @@
-//use .env in our application
-require("dotenv").config(); // untuk mengawali suatu setting dengan ENV dan express
-
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
-const crypto = require("crypto");
+// const fs = require("fs");
+
+// connect;
+require("./server/config/db");
+// require("dotenv").config();
 
 //Layouting
 const expressLayout = require("express-ejs-layouts");
@@ -15,12 +16,12 @@ const MongoStore = require("connect-mongo");
 const methodOverride = require("method-override");
 
 //connect to mongoDB
-const { connectDB } = require("./server/config/db");
+// const connect = require("./server/config/db");
+
 const app = express();
 const PORT = 5000;
 
 //pemanggilan connection of mongoDB
-connectDB();
 
 // bagaimana kita bisa mendapatkan data search tapi dengan aturan middleware?? berikut ini caranya
 app.use(express.urlencoded({ extended: true }));
