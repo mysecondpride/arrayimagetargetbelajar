@@ -16,9 +16,13 @@ const Post = new Schema({
     type: Date,
     default: Date.now, // sets the current date/time when the post is created
   },
-  imageFileId: {
-    type: Schema.Types.ObjectId,
-    ref: "upload.files",
+  file: {
+    fileId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    },
+    filename: String,
+    contentType: String,
   },
 });
 

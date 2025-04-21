@@ -7,9 +7,9 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 // const db = require("../server/config/db");
 const mongoose = require("mongoose");
 
-// biang keladi dari id
-
 const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/blogBnB");
+
+//langkah menggunakan gridstream adalah langkah ke-2
 
 conn.on("connected", () => console.log("connected"));
 conn.on("open", () => console.log("open"));

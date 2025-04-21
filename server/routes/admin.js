@@ -14,6 +14,13 @@ var mongoose = require("mongoose");
 const { log } = require("console");
 const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/blogBnB");
 const { ObjectId } = require("mongodb");
+
+//CRUD tambahan
+const { createModel } = require("mongoose-gridfs");
+const { createReadStream } = require("fs");
+
+// use default bucket
+
 let gfs;
 
 conn.once("open", function () {
@@ -133,18 +140,12 @@ router.get("/add-post", authMiddleware, async (req, res) => {
 router.get("/post-article/:id", authMiddleware, async (req, res) => {
   try {
     const articleId = req.params.id;
-    const data = await Post.findById(articleId)
-      .populate({ path: "imageFileId", strictPopulate: false })
-      .exec((err, post) => {
-        if (err) {
-          console.log(err);
-          res.redirect("/post");
-        } else {
-          res.status(200).json({ message: data });
-        }
-      });
+    const data = await Post.findById(articleId);
+    if (!data) {
+      res.status(404).json({ message: "data was not foound" });
+    }
 
-    // res.render("admin/post-article", { layout: layoutAdmin, data });
+    res.render("admin/post-article", { layout: layoutAdmin, data });
   } catch (error) {
     console.log("error", error);
   }
@@ -178,23 +179,24 @@ router.get("/image/:id", (req, res) => {
 });
 
 router.post("/add-post", upload.single("utama"), async (req, res) => {
-  console.log("Uploaded file:", req.file); // Add this line
-
   const { title, body } = req.body;
   try {
-    if (!title || !body || req.file) {
-      // return res
-      //   .status(400)
-      //   .json({ error: "image, title, body are required." });
-      console.log("ojo lali ngisi file yo");
+    if (!title || !body) {
+      res
+        .status(400)
+        .json({ message: "pesan saya isi dulu ya field title dan content" });
     }
-
     const ost = new Post({
       title,
       body,
-      imageFileId: req.file._id, //ketika diganti file ini bson yang salah
+      file: {
+        fileId: req.file.id,
+        filename: req.file.filename,
+        contentType: req.file.contentType,
+      },
     });
     await ost.save();
+
     res.json({ message: "Blog created!", ost: ost });
   } catch (err) {
     console.error(err);
@@ -203,6 +205,35 @@ router.post("/add-post", upload.single("utama"), async (req, res) => {
       .json({ error: "Something went wrong while creating the blog post." });
   }
 });
+
+// router.get("/postimage/:filename", (req, res) => {
+//   console.log("Uploaded file:", req.file); // Add this line
+
+//   const Attachment = createModel({
+//     modelName: "Attachment",
+//     connection: gfs,
+//   });
+
+//   const { title, body } = req.body;
+//   const readStream = createReadStream("1c9acb0bdfd6729236544e3cfa82566b.jpg");
+//   const options = {
+//     filename: "1c9acb0bdfd6729236544e3cfa82566b.jpg",
+//     contentType: "jpg/png,",
+//   };
+//   Attachment.write(options, readStream, (error, file) => {
+//     if (error) {
+//       res.status(400).json(error);
+//     } else {
+//       const ost = new Post({
+//         title,
+//         body,
+//         options,
+//       });
+//       ost.save();
+//       res.json({ message: "Blog created!", ost: ost });
+//     }
+//   });
+// });
 
 router.get("/files", async (req, res) => {
   try {

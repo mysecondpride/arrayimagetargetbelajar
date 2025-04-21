@@ -51,18 +51,6 @@ router.get("/post/:id", async (req, res) => {
   res.render("post", { locals, data });
 });
 
-// router.get("/files", (req, res) => {
-//   gfs.findOne(
-//     { filename: "5575638e1fb9c23f0df83e7c5d1931b6.jpg" },
-//     (err, files) => {
-//       if (!files || files.length === 0) {
-//         return res.status(404).json({ err: "no file exist" });
-//       }
-//       return res.json(files);
-//     }
-//   );
-// });
-
 //Post
 //Post:searchTerm
 router.post("/search", async (req, res) => {
