@@ -1,3 +1,6 @@
+//connect to database
+require("dotenv").config();
+
 //penghubung router
 const express = require("express");
 const router = express.Router();
@@ -16,7 +19,7 @@ const Post = require("../models/Post");
 const { GridFSBucket } = require("mongodb");
 
 //how to connect to mongoDB with string
-const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/blogBnB");
+const conn = mongoose.createConnection(MONGO_URI);
 
 //Making a global variable
 let gfs;
