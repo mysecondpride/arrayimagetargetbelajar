@@ -1,3 +1,6 @@
+//connectdengan env
+require("dotenv").config();
+
 //router penghubung ke database
 const express = require("express");
 const router = express.Router();
@@ -30,7 +33,7 @@ router.use(methodOverride("_method"));
 const upload = require("../../utils/gridFs"); // Import GridFS upload
 
 //how to connect by connection string
-const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/blogBnB");
+const conn = mongoose.createConnection(process.env.MONGO_URI);
 
 let gfs;
 
