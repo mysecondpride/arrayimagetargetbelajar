@@ -19,7 +19,7 @@ const Post = require("../models/Post");
 const { GridFSBucket } = require("mongodb");
 
 //how to connect to mongoDB with string
-const conn = mongoose.createConnection(MONGO_URI);
+const conn = mongoose.createConnection(process.env.MONGO_URI);
 
 //Making a global variable
 let gfs;
