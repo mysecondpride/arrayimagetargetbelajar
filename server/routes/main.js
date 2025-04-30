@@ -1,17 +1,34 @@
+//penghubung router
 const express = require("express");
-const mongoose = require("mongoose");
 const router = express.Router();
+
+// router penghubung ke package dan model
+const mongoose = require("mongoose");
+
+//perobaan layout di main
+// const layOut = require(".");
+//schema yang diperlukan:
+//Schema post
 const Post = require("../models/Post");
-const Grid = require("gridfs-stream");
-// const Gf = require("../../utils/gridStream");
+
+// const Grid = require("gridfs-stream");
+
 const { GridFSBucket } = require("mongodb");
+
+//how to connect to mongoDB with string
 const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/blogBnB");
+
+//Making a global variable
 let gfs;
 
+// Bagaimana ketika connect dengan database bisa langsung tertuju pada collection
 conn.once("open", function () {
-  gfs = Grid(conn.db, mongoose.mongo);
-});
+  const bucket = new GridFSBucket(conn.db, {
+    bucketName: "upload", // <-- equivalent to gfs.collection('upload')
+  });
 
+  // Now you use bucket to upload/download files
+});
 router.get("/", async (req, res) => {
   const locals = {
     title: "GadgetBase",

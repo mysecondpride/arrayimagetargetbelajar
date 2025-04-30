@@ -1,5 +1,10 @@
 body {
     background-color: aquamarine;
+    font-family: "Mea Culpa", cursive;
+    font-weight: 400;
+    font-style: normal;
+        /* font-style: normal; */
+
 }
 /* 
 header {
@@ -17,9 +22,20 @@ header {
     margin-top: 20px;
 }
 
+button{
+    background-color: #007bff;
+    color:white;
+    text-align:center;
+    padding:10px;
+    border-radius:8%;
+}
+
 img{
-    width: 100%; 
-    height: auto
+
+    border-radius:2%;
+    margin-left:40px;
+    margin-right:30px;
+    margin-bottom:30px
 }
 
 a{color:var(--black)};
@@ -37,7 +53,8 @@ container{
 
 
 .main{
-    padding:20px 0
+    padding:40px 40px;
+    margin-left:40px;
 }
 .searchBar{
     visibility:hidden;
@@ -96,8 +113,9 @@ padding:0;
 
 }
 
-.header__logo:hover{
-text-decoration: underline;
+.header__logo{
+/* text-decoration: underline; */
+margin-bottom:30px;
 }
 
 .header__nav{
@@ -268,3 +286,11 @@ text-decoration: underline;
     padding:10px 0
 
 }
+
+.form-add-post1{
+    display:flex;
+    width:758;
+    height:360;
+
+}
+

@@ -1,0 +1,34 @@
+
+<div class="author">
+    <h1 class="author__heading">Selamat datang AB (Accounting Basis)</h1>
+    <p class="author__body">Blog yang membahas tentang accounting, perpajakan, dan aplikasi digital untuk UMKM</p>
+    <img src="/img/apple.png" alt="apple" width="758" height="528" />
+    <section class="articles">
+      <h2 class="articles__heading">Latest Post</h2>
+  
+  
+      <% if (data.length === 0) { %>
+        <p>No posts yet. Please check back later!</p>
+      <% } else { %>
+        <ul class="artocle-ul">
+          <% data.forEach(element => { %>
+          <li>
+            <a href="/post/<%= element._id %>"
+              <span><%= element.title %></span>
+            </a>
+            <span><%= element.createdAt.toString() %></span>
+          </li>
+  
+  
+          <% }) %>
+        </ul> 
+    
+      <% } %>
+      
+      <% if (nextPage !==null) { %>
+      <a href="/?page=<%= nextPage %>" class="pagination"
+        >&lt view older post</a
+      >
+  
+      <% } %>
+    </section>

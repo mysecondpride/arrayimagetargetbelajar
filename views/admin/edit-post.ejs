@@ -1,51 +1,79 @@
 <a href="/dashboard">&larr;Back</a>
-<div class="admin-title">
-  <!-- <h2>view edit post</h2>
-  <form
-    action="/delete-post/<% data._id %>?_method=DELETE"
-    method="POST"
-    class="form"
-  >
-    <input type="submit" value="delete" class="btn-delete btn" />
-  </form>
-</div> -->
   <form action="/edit-post/<%= data._id %>?_method=PUT" method="POST">
-    <label for="title"> Title </label>
+  <div class="form add-post1">
+    <label for="title" class="form-label">Judul</label>
     <input
       type="text"
-      placeholder="INPUT TITTLE"
+      id="title"
       name="title"
+      class="form-control"
+      placeholder="Tulis judulnya"
       value="<%= data.title %>"
+      required
     />
-
-    <label for="body"> content </label>
-    <textarea name="body" cols="50" rows="10"><%= data.body %></textarea>
-
-    <input type="submit" value="update" class="btn" />
-  </form>
-  <div class="container mt-5">
-    <h2>Upload Image</h2>
-    <form
-      id="uploadForm"
-      action="/image"
-      method="POST"
-      enctype="multipart/form-data"
-    >
-      <div class="mb-3">
-        <label for="image" class="form-label"
-          ><i class="bi bi-cloud-upload"></i> Select Image</label
-        >
-        <input
-          type="file"
-          class="form-control"
-          id="image"
-          name="image"
-          required
-        />
-      </div>
-      <button type="submit" class="btn btn-primary">Upload</button>
-    </form>
-
-    <div id="message" class="mt-3"></div>
   </div>
+  <div class="form add-post1">
+    <label for="brand and series" class="form-label">Brand and Series</label>
+    <input
+      type="text"
+      id="bns"
+      name="bns"
+      class="form-control"
+      placeholder="misal samsung A55"
+      required
+    />
+  </div>
+
+
+  <div class="form add-post2">
+    <label for="body" class="form-label">Artikel</label>
+    <textarea
+      id="body"
+      name="body"
+      class="form-control"
+      rows="10"
+      cols="50"
+      placeholder="Tulis artikelnya"
+      
+      required
+    ><%= data.body %></textarea>
+  </div>
+
+  <h2>Upload Image</h2>
+
+  <!-- <div class="mb-3">
+    <label for="imageDesc">image Description</label>
+    <input
+      type="text"
+      class="form-control"
+      id="imageDesc"
+      name="imageDesc"
+      required
+   
+    />
+  </div> -->
+  <div class="mb-3">
+    <label for="utama" class="form-label"
+      ><i class="bi bi-cloud-upload"></i> Select Image Utama</label
+    >
+    <input
+      type="file"
+      class="form-control"
+      id="file"
+      name="utama"
+      required
+   
+    />
+  </div>
+
+
+  <button type="submit" class="submit-post">Tambah Post Article</button>
+</form>
+
+
+
+
+
+</div>
+
 </div>

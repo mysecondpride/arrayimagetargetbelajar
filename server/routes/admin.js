@@ -1,25 +1,36 @@
+//router penghubung ke database
 const express = require("express");
-const fs = require("fs");
 const router = express.Router();
-const Post = require("../models/Post");
-const User = require("../models/User");
-const layoutAdmin = "../views/layouts/admin";
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const Grid = require("gridfs-stream");
-const methodOverride = require("method-override");
-const upload = require("../../utils/gridFs"); // Import GridFS upload
-const jwtSecret = process.env.JWT_SECRET;
+// router penghubung ke package dan model
 var mongoose = require("mongoose");
-const { log } = require("console");
+
+//schema yang diperlukan:
+//Schema post
+const Post = require("../models/Post");
+//Schema login
+const User = require("../models/User");
+
+//Layout yang dilempar ke target
+const layoutAdmin = "../views/layouts/admin";
+
+//Hashing the password
+const bcrypt = require("bcrypt");
+
+// mencocokkan token (ijin autorisasi atau API ) antara client dan server
+const jwt = require("jsonwebtoken");
+const jwtSecret = process.env.JWT_SECRET;
+
+//melakukan stream (lalulintas) file (streaming)
+const Grid = require("gridfs-stream");
+
+// melakukan edit, yang di HTML tersedia POST
+const methodOverride = require("method-override");
+
+router.use(methodOverride("_method"));
+const upload = require("../../utils/gridFs"); // Import GridFS upload
+
+//how to connect by connection string
 const conn = mongoose.createConnection("mongodb://127.0.0.1:27017/blogBnB");
-const { ObjectId } = require("mongodb");
-
-//CRUD tambahan
-const { createModel } = require("mongoose-gridfs");
-const { createReadStream } = require("fs");
-
-// use default bucket
 
 let gfs;
 
@@ -36,7 +47,7 @@ router.get("/admin", async (req, res) => {
       title: "admin",
       description: "ini adalah page dari admin",
     };
-    res.render("admin/index", { locals, layout: layoutAdmin });
+    res.render("admin/index", { locals });
   } catch (error) {
     console.log("error", error);
   }
@@ -78,6 +89,7 @@ router.post("/admin", async (req, res) => {
 //function that helping me out after soon we erase the cookies
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.token;
+  // console.log(Object.keys(req)) kalau ingin mengetahui method yang ada di req
   if (!token) {
     return res.status(401).json({ message: "unauthorized" });
   }
@@ -120,7 +132,7 @@ router.get("/dashboard", authMiddleware, async (req, res) => {
     const data = await Post.find({});
     console.log(data);
 
-    res.render("admin/dashboard", { data });
+    res.render("admin/dashboard", { data, layout: layoutAdmin });
   } catch (error) {
     console.log("error", error);
   }
@@ -163,7 +175,7 @@ router.get("/image/:id", (req, res) => {
 
     stream.on("file", (file) => {
       // Set correct content type
-      res.set("Content-Type", file.contentType || "image/jpeg");
+      res.set("Content-Type", file.contentType || "jpg/jpeg");
     });
 
     stream.on("error", (err) => {
@@ -206,35 +218,6 @@ router.post("/add-post", upload.single("utama"), async (req, res) => {
   }
 });
 
-// router.get("/postimage/:filename", (req, res) => {
-//   console.log("Uploaded file:", req.file); // Add this line
-
-//   const Attachment = createModel({
-//     modelName: "Attachment",
-//     connection: gfs,
-//   });
-
-//   const { title, body } = req.body;
-//   const readStream = createReadStream("1c9acb0bdfd6729236544e3cfa82566b.jpg");
-//   const options = {
-//     filename: "1c9acb0bdfd6729236544e3cfa82566b.jpg",
-//     contentType: "jpg/png,",
-//   };
-//   Attachment.write(options, readStream, (error, file) => {
-//     if (error) {
-//       res.status(400).json(error);
-//     } else {
-//       const ost = new Post({
-//         title,
-//         body,
-//         options,
-//       });
-//       ost.save();
-//       res.json({ message: "Blog created!", ost: ost });
-//     }
-//   });
-// });
-
 router.get("/files", async (req, res) => {
   try {
     let files = await gfs.files.find().toArray();
@@ -243,29 +226,6 @@ router.get("/files", async (req, res) => {
     res.json({ err });
   }
 });
-
-/* get to Edit */
-/* admin-edit-post */
-
-// router.get("/edit-post/:id", authMiddleware, async (req, res) => {
-//   try {
-//     const data = await Post.findOne({ _id: req.params.id });
-
-//     res.render("admin/edit-post", { layout: layoutAdmin, data });
-//   } catch (error) {
-//     res.status(500).send("Error updating post");
-//   }
-// });
-
-// router.get("/edit-post/:id", authMiddleware, async (req, res) => {
-//   try {
-//     const data = await Post.findOne({ _id: req.params.id });
-
-//     res.render("admin/edit-post", { layout: layoutAdmin, data });
-//   } catch (error) {
-//     res.status(500).send("Error updating post");
-//   }
-// });
 
 router.get("/edit-post/:id", authMiddleware, async (req, res) => {
   try {
@@ -284,21 +244,67 @@ router.get("/edit-post/:id", authMiddleware, async (req, res) => {
 });
 
 //ini masih belum fix ya......
+router.put(
+  "/edit-post/:id",
+  upload.single("utama"),
+  authMiddleware,
+  async (req, res) => {
+    const { title, body } = req.body;
 
-router.put("/edit-post/:id", authMiddleware, async (req, res) => {
+    try {
+      // 1. Find the post by ID
+      const post = await Post.findById(req.params.id);
+      if (!post) return res.status(404).send("Post not found");
+
+      // 2. Delete the old image from GridFS (if a new image is uploaded)
+      if (req.file && post.filename) {
+        const db = mongoose.connection.db;
+        const bucket = new mongoose.mongo.GridFSBucket(db, {
+          bucketName: "upload", // use your bucket name
+        });
+
+        await bucket.delete(post.filename); // remove old image by ID
+      }
+
+      // 3. Update the fields
+      post.title = title;
+      post.body = body;
+
+      // 4. Update the image if new file is uploaded
+      if (req.file && req.file.id) {
+        post.filename = req.file.filename;
+      }
+
+      // 5. Save updated post
+      await post.save();
+
+      res.redirect("/dashboard");
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Error updating post");
+    }
+  }
+);
+
+router.delete("/delete-post/:id", async (req, res) => {
   try {
-    await Post.findByIdAndUpdate(req.params.id, {
-      title: req.body.title,
-      body: req.body.body,
-      // updateddAt: Date.now(),
-    });
-
-    // if (!data) return res.status(404).send("updated article is not found");
-
-    res.redirect(`/edit-post/${req.params.id}`);
-  } catch (error) {
-    res.status(500).send("Error updating post");
+    const deletedPost = await Post.findByIdAndDelete(req.params.id);
+    if (!deletedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
+// how to log out from the web app
+router.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.send("Logout failed");
+    }
+    res.redirect("/admin"); // or wherever you want
+  });
+});
 module.exports = router;
