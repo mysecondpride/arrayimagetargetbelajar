@@ -1,3 +1,5 @@
+
+#!/usr/bin/env node
 const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -22,7 +24,7 @@ const app = express();
 const PORT = 5000;
 
 //pemanggilan connection of mongoDB
-connectDB;
+
 // bagaimana kita bisa mendapatkan data search tapi dengan aturan middleware?? berikut ini caranya
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
