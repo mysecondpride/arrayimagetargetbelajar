@@ -34,9 +34,9 @@ conn.once("open", function () {
 });
 router.get("/", async (req, res) => {
   const locals = {
-    title: "GadgetBase",
+    title: "Accounting Basis",
     description:
-      "blog tentang smartphone yang membahas tentang ulasan | smartphone terbaru | pengalaman ",
+      "blog tentang akuntansi | perpajakan | aplikasi pembukuan UMKM ",
   };
   // router ini untuk melempar data yang sudah kita post
   let perPage = 10;
@@ -62,8 +62,9 @@ router.get("/about", (req, res) => {
 
 router.get("/post/:id", async (req, res) => {
   const locals = {
-    title: "GadgetBase",
-    description: "ulasan | smartphone terbaru | pengalaman ",
+    title: "Accounting Basis",
+    description:
+      "blog tentang akuntasi | laporan keuangan | aplikasi pembukuan untuk UMKM ",
   };
   const slug = req.params.id;
   const data = await Post.findById(slug);

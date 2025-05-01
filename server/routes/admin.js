@@ -178,7 +178,7 @@ router.get("/image/:id", (req, res) => {
 
     stream.on("file", (file) => {
       // Set correct content type
-      res.set("Content-Type", file.contentType || "jpg/jpeg");
+      res.set("Content-Type", file.contentType || "image/jpeg");
     });
 
     stream.on("error", (err) => {
