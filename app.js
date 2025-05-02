@@ -6,7 +6,7 @@ const path = require("path");
 
 // connect;
 const connectDB = require("./server/config/db");
-// require("dotenv").config();
+require("dotenv").config();
 connectDB();
 
 //Layouting
@@ -52,8 +52,8 @@ app.use(
     saveUninitialized: true,
     store: MongoStore.create({
       mongoUrl: process.env.MONGODB_URI, // Match Railway’s environment variable name
-      dbName: "Ab1hirosehatselalu", // Optional but recommended
-      collectionName: "test", // Optional (default: "sessions")
+      dbName: "blogBnB", // Optional but recommended
+      collectionName: "posts", // Optional (default: "sessions")
     }),
   })
 );

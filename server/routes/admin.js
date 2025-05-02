@@ -33,7 +33,7 @@ router.use(methodOverride("_method"));
 const upload = require("../../utils/gridFs"); // Import GridFS upload
 
 //how to connect by connection string
-const conn = mongoose.createConnection(process.env.MONGO_URI);
+const conn = mongoose.createConnection(process.env.MONGODB_URI);
 
 let gfs;
 
