@@ -1,7 +1,15 @@
 // db.js
 const mongoose = require("mongoose");
-require("dotenv").config();
+// require("dotenv").config();
 
-const db = mongoose.connect(process.env.MONGO_URI);
+const connectDB = async () => {
+  try {
+    mongoose.set("strictQuery", false);
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`Database connected: ${connection.host}`);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
-module.exports = db;
+module.exports = connectDB;
