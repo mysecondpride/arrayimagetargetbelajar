@@ -7,6 +7,7 @@ const path = require("path");
 // connect;
 const connectDB = require("./server/config/db");
 // require("dotenv").config();
+connectDB();
 
 //Layouting
 const expressLayout = require("express-ejs-layouts");

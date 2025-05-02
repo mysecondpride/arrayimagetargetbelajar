@@ -7,7 +7,7 @@ const { GridFsStorage } = require("multer-gridfs-storage");
 // const db = require("../server/config/db");
 const mongoose = require("mongoose");
 
-const conn = mongoose.connect(process.env.MONGO_URI, {
+const conn = mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
@@ -21,7 +21,7 @@ const conn = mongoose.connect(process.env.MONGO_URI, {
 // });
 // Use mongoose.connection for GridFsStorage
 const storage = new GridFsStorage({
-  url: process.env.MONGO_URI,
+  url: process.env.MONGODB_URI,
   file: (req, file) => {
     return new Promise((resolve, reject) => {
       crypto.randomBytes(16, (err, buf) => {
