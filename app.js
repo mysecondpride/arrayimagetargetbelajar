@@ -34,13 +34,25 @@ app.use(methodOverride("_method"));
 app.use(bodyParser.json());
 
 //session, session ini mengandung logic, ini adalah basic
+// app.use(
+//   session({
+//     secret: "keybord cat",
+//     resave: false,
+//     saveUninitialized: true,
+//     store: MongoStore.create({
+//       mongoUrl: process.env.MONGO_URI,
+//     }),
+//   })
+// );
+
 app.use(
   session({
-    secret: "keybord cat",
+    secret: process.env.SESSION_SECRET, // Use the environment variable
     resave: false,
     saveUninitialized: true,
     store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URI,
+      mongoUrl: process.env.MONGODB_URI, // Sessions stored in MongoDB
+      dbName: "your-database-name", // Optional but recommended
     }),
   })
 );
