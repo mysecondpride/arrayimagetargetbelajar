@@ -47,12 +47,13 @@ app.use(bodyParser.json());
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET, // Use the environment variable
+    secret: process.env.SESSION_SECRET, // Use an env variable (not hardcoded)
     resave: false,
     saveUninitialized: true,
     store: MongoStore.create({
-      mongoUrl: process.env.MONGODB_URI, // Sessions stored in MongoDB
-      dbName: "your-database-name", // Optional but recommended
+      mongoUrl: process.env.MONGODB_URI, // Match Railway’s environment variable name
+      dbName: "Ab1hirosehatselalu", // Optional but recommended
+      collectionName: "test", // Optional (default: "sessions")
     }),
   })
 );
