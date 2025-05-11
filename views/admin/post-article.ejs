@@ -4,21 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Smartphone</title>
+    <title>Produk Berkebun</title>
   </head>
   <body>
     <h2><%=data.title %></h2>
     <p><%=data.body %></p>
-
     <div>
-      <% if (data.file && data.file.fileId) { %>
-      <img
-        src="/image/<%= data.file.fileId %>"
-        alt="<%= data.file.filename %>"
-        style="width: 300px; height: 200px; margin-top: 20px"
-      />
-
-      <% } %>
+      <% data.files.forEach(function (file) { %>
+      <img src="/image/<%= file._id %>" alt="<%= file.filename%>" />
+      <% }) %>
     </div>
   </body>
 </html>

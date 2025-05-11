@@ -1,5 +1,6 @@
 //connectdengan env
 require("dotenv").config();
+const archiver = require("archiver");
 
 //router penghubung ke database
 const express = require("express");
@@ -31,10 +32,12 @@ const methodOverride = require("method-override");
 
 router.use(methodOverride("_method"));
 const upload = require("../../utils/gridFs"); // Import GridFS upload
+const { GridFsStorage } = require("multer-gridfs-storage");
 
 //how to connect by connection string
 const conn = mongoose.createConnection(process.env.MONGODB_URI);
 
+let bucket;
 let gfs;
 
 conn.once("open", function () {
@@ -167,33 +170,39 @@ router.get("/post-article/:id", authMiddleware, async (req, res) => {
 });
 
 //admin
-router.get("/image/:id", (req, res) => {
-  try {
-    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-      bucketName: "upload",
-    });
+// router.get("/image/:id", (req, res) => {
+//   try {
+//     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+//       bucketName: "upload",
+//     });
 
-    const fileId = new mongoose.Types.ObjectId(req.params.id);
-    const stream = bucket.openDownloadStream(fileId);
+//     const fileids = Array.isArray(req.query._id)
+//       ? req.query._id
+//       : [req.query._id];
 
-    stream.on("file", (file) => {
-      // Set correct content type
-      res.set("Content-Type", file.contentType || "image/jpeg");
-    });
+//     const ids = fileids.forEach((id) => {
+//       const fileId = new mongoose.Types.ObjectId(id);
+//       // create stream, pipe it, or accumulate, etc.
+//     });
+//     const stream = bucket.openDownloadStream(ids);
+//     stream.on("file", (file) => {
+//       // Set correct content type
+//       res.set("Content-Type", file.contentType || "image/jpeg");
+//     });
 
-    stream.on("error", (err) => {
-      console.error("Stream error:", err.message);
-      res.status(404).json({ message: "File not found" });
-    });
+//     stream.on("error", (err) => {
+//       console.error("Stream error:", err.message);
+//       res.status(404).json({ message: "File not found" });
+//     });
 
-    stream.pipe(res);
-  } catch (err) {
-    console.error("Route error:", err.message);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+//     stream.pipe(res);
+//   } catch (err) {
+//     console.error("Route error:", err.message);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
 
-router.post("/add-post", upload.single("utama"), async (req, res) => {
+router.post("/add-post", upload.array("utama", 3), async (req, res) => {
   const { title, body } = req.body;
   try {
     if (!title || !body) {
@@ -201,14 +210,16 @@ router.post("/add-post", upload.single("utama"), async (req, res) => {
         .status(400)
         .json({ message: "pesan saya isi dulu ya field title dan content" });
     }
+
+    const files = req.files.map((file) => ({
+      filename: file.filename,
+      fileType: file.mimetype,
+      url: `/uploads/${file.filename}`, // or wherever your files are served from
+    }));
     const ost = new Post({
       title,
       body,
-      file: {
-        fileId: req.file.id,
-        filename: req.file.filename,
-        contentType: req.file.contentType,
-      },
+      files,
     });
     await ost.save();
 
@@ -221,14 +232,89 @@ router.post("/add-post", upload.single("utama"), async (req, res) => {
   }
 });
 
-router.get("/files", async (req, res) => {
+router.get("/image/:id", async (req, res) => {
   try {
-    let files = await gfs.files.find().toArray();
-    res.json({ files });
+    const fileId = new mongoose.Types.ObjectId(req.params.id);
+
+    // ✅ First, define the collection
+    const filesCollection = mongoose.connection.db.collection("upload.files");
+
+    // ✅ Then, initialize the GridFS bucket
+    bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: "upload",
+    });
+
+    // ✅ Now use the collection to find the file metadata
+    const file = await filesCollection.findOne({ _id: fileId });
+
+    if (!file || !file.contentType.startsWith("image/")) {
+      return res.status(404).send("Not an image");
+    }
+
+    // ✅ Set content type and stream the image
+    res.set("Content-Type", file.contentType);
+    const readStream = bucket.openDownloadStream(file._id);
+    readStream.pipe(res);
   } catch (err) {
-    res.json({ err });
+    console.error(err);
+    res.status(500).send("Error retrieving image");
   }
 });
+
+// router.get("/image/:id", (req, res) => {
+//   try {
+//     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+//       bucketName: "upload",
+//     });
+
+//     const fileId = new mongoose.Types.ObjectId(req.params.id);
+//     const stream = bucket.openDownloadStream(fileId);
+
+//     stream.on("file", (file) => {
+//       // Set correct content type
+//       res.set("Content-Type", file.contentType || "image/jpeg");
+//     });
+
+//     stream.on("error", (err) => {
+//       console.error("Stream error:", err.message);
+//       res.status(404).json({ message: "File not found" });
+//     });
+
+//     stream.pipe(res);
+//   } catch (err) {
+//     console.error("Route error:", err.message);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+// router.get("/image/zip", async (req, res) => {
+//   const ids = Array.isArray(req.query._id) ? req.query._id : [req.query._id];
+//   const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+//     bucketName: "upload",
+//   });
+
+//   res.setHeader("Content-Type", "application/zip");
+//   res.setHeader("Content-Disposition", "attachment; filename=files.zip");
+
+//   const archive = archiver("zip");
+//   archive.pipe(res);
+
+//   for (const id of ids) {
+//     const objectId = new mongoose.Types.ObjectId(id);
+//     const stream = bucket.openDownloadStream(objectId);
+//     archive.append(stream, { name: `${id}.jpg` }); // You could fetch filename from DB if needed
+//   }
+
+//   archive.finalize();
+// });
+
+// router.get("/files", async (req, res) => {
+//   try {
+//     let files = await gfs.files.find().toArray();
+//     res.json({ files });
+//   } catch (err) {
+//     res.json({ err });
+//   }
+// });
 
 router.get("/edit-post/:id", authMiddleware, async (req, res) => {
   try {

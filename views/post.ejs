@@ -10,7 +10,7 @@
     <p><%= data.body %></p>
     <% if (data.file && data.file.fileId) { %>
     <img
-      src="/image/<%= data.file.fileId %>"
+      src="/image/<%= data.file[0].fileId %>"
       alt="<%= data.file.filename %>"
       style="width: 300px; height: 200px"
     />
