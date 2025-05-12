@@ -31,18 +31,18 @@ const Grid = require("gridfs-stream");
 const methodOverride = require("method-override");
 
 router.use(methodOverride("_method"));
-const upload = require("../../utils/gridFs"); // Import GridFS upload
+const uploads = require("../../utils/gridFs"); // Import GridFS upload
 const { GridFsStorage } = require("multer-gridfs-storage");
 
 //how to connect by connection string
 const conn = mongoose.createConnection(process.env.MONGODB_URI);
 
-let bucket;
+// let bucket;
 let gfs;
 
 conn.once("open", function () {
   gfs = Grid(conn.db, mongoose.mongo);
-  gfs.collection("upload");
+  gfs.collection("uploads");
 });
 /* GET */
 /* admin-loginpage */
@@ -169,33 +169,160 @@ router.get("/post-article/:id", authMiddleware, async (req, res) => {
   }
 });
 
-router.post("/add-post", upload.single("utama"), async (req, res) => {
+router.post("/add-post", uploads.array("utama", 10), async (req, res) => {
   const { title, body } = req.body;
+
   try {
     if (!title || !body) {
-      res
-        .status(400)
-        .json({ message: "pesan saya isi dulu ya field title dan content" });
+      return res.status(400).json({
+        message: "pesan saya isi dulu ya field title dan content",
+      });
     }
+
+    // Process uploaded files into fileSchema format
+    const files = req.files?.map((file) => ({
+      filename: file.filename,
+      fileType: file.mimetype,
+      url: `/files/${file.filename}`, // or custom download route
+      uploadedAt: new Date(),
+    }));
+
+    // Save new Post with file metadata
     const ost = new Post({
       title,
       body,
-      file: {
-        fileId: req.file.id,
-        filename: req.file.filename,
-        contentType: req.file.contentType,
-      },
+      files, // your schema expects an array of file objects
     });
+
     await ost.save();
 
-    res.json({ message: "Blog created!", ost: ost });
+    res.status(201).json({ message: "Blog created!", ost });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({ error: "Something went wrong while creating the blog post." });
+    res.status(500).json({
+      error: "Something went wrong while creating the blog post.",
+    });
   }
 });
+
+// router.get("/image/:id", (req, res) => {
+//   gfs.find({ filename: req.params.id }).toArray((err, files) => {
+//     if (!files || files.length === 0) {
+//       return res.status(404).json({ err: "File not found" });
+//     }
+
+//     gfs.openDownloadStreamByName(req.params.id).pipe(res);
+//   });
+// });
+
+router.get("/image/:id", (req, res) => {
+  try {
+    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+      bucketName: "uploads",
+    });
+    const { id } = req.params;
+    const fileId = new mongoose.Types.ObjectId(id);
+    const stream = bucket.openDownloadStream(fileId);
+
+    stream.on("file", (file) => {
+      // Set correct content type
+      res.set("Content-Type", file.contentType || "image/jpg");
+    });
+
+    stream.on("error", (err) => {
+      console.error("Stream error:", err.message);
+      res.status(404).json({ message: "File not found" });
+    });
+
+    stream.pipe(res);
+  } catch (err) {
+    console.error("Route error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+//ini tidak bisa
+// router.get("/image/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+//       bucketName: "uploads",
+//     });
+
+//     // 1. Validate ID format
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//       return res.status(400).json({ message: "Invalid ID format" });
+//     }
+
+//     const fileId = new mongoose.Types.ObjectId(id);
+
+//     // 2. Check if file exists and get metadata
+//     const files = await bucket.find({ _id: fileId }).toArray();
+//     if (files.length === 0) {
+//       return res.status(404).json({ message: "File not found" });
+//     }
+
+//     const file = files[0];
+
+//     // 3. Set headers using metadata
+//     res.set({
+//       "Content-Type": file.contentType || "image/jpeg",
+//       "Content-Length": file.length,
+//     });
+
+//     // 4. Stream the file
+//     const downloadStream = bucket.openDownloadStream(fileId);
+//     downloadStream.pipe(res);
+
+//     downloadStream.on("error", (err) => {
+//       console.error("Stream error:", err);
+//       if (!res.headersSent) {
+//         res.status(500).json({ message: "Error streaming file" });
+//       }
+//     });
+//   } catch (err) {
+//     console.error("Route error:", err.message);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+// router.get("/image/:id", async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+//       bucketName: "uploads",
+//     });
+
+//     // Validate ID format first
+//     if (!mongoose.Types.ObjectId.isValid(id)) {
+//       return res.status(400).json({ message: "Invalid ID format" });
+//     }
+
+//     const fileId = new mongoose.Types.ObjectId(id);
+
+//     // Check if file exists and get metadata
+//     const files = await bucket.find({ _id: fileId }).toArray();
+//     if (!files.length) {
+//       return res.status(404).json({ message: "File not found" });
+//     }
+
+//     const [file] = files;
+
+//     // Set Content-Type from metadata
+//     res.set("Content-Type", file.contentType || "image/jpeg"); // Fix "jpg" to "jpeg"
+
+//     const stream = bucket.openDownloadStream(fileId);
+//     stream.pipe(res);
+
+//     stream.on("error", (err) => {
+//       console.error("Stream error:", err.message);
+//       res.status(404).json({ message: "File not found" });
+//     });
+//   } catch (err) {
+//     console.error("Route error:", err.message);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// });
 
 // router.get("/image/:id", async (req, res) => {
 //   try {
@@ -225,31 +352,15 @@ router.post("/add-post", upload.single("utama"), async (req, res) => {
 //     res.status(500).send("Error retrieving image");
 //   }
 // });
-router.get("/image/:id", (req, res) => {
-  try {
-    const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-      bucketName: "upload",
-    });
+// router.get("/image/:filename", (req, res) => {
+//   gfs.find({ filename: req.params.filename }).toArray((err, files) => {
+//     if (!files || files.length === 0) {
+//       return res.status(404).json({ err: "File not found" });
+//     }
 
-    const fileId = new mongoose.Types.ObjectId(req.params.id);
-    const stream = bucket.openDownloadStream(fileId);
-
-    stream.on("file", (file) => {
-      // Set correct content type
-      res.set("Content-Type", file.contentType || "jpg/jpeg");
-    });
-
-    stream.on("error", (err) => {
-      console.error("Stream error:", err.message);
-      res.status(404).json({ message: "File not found" });
-    });
-
-    stream.pipe(res);
-  } catch (err) {
-    console.error("Route error:", err.message);
-    res.status(500).json({ message: "Server error" });
-  }
-});
+//     gfs.openDownloadStreamByName(req.params.filename).pipe(res);
+//   });
+// });
 
 // router.get("/image/zip", async (req, res) => {
 //   const ids = Array.isArray(req.query._id) ? req.query._id : [req.query._id];
@@ -300,7 +411,7 @@ router.get("/edit-post/:id", authMiddleware, async (req, res) => {
 //ini masih belum fix ya......
 router.put(
   "/edit-post/:id",
-  upload.single("utama"),
+  uploads.single("utama"),
   authMiddleware,
   async (req, res) => {
     const { title, body } = req.body;
@@ -314,7 +425,7 @@ router.put(
       if (req.file && post.filename) {
         const db = mongoose.connection.db;
         const bucket = new mongoose.mongo.GridFSBucket(db, {
-          bucketName: "upload", // use your bucket name
+          bucketName: "uploads", // use your bucket name
         });
 
         await bucket.delete(post.filename); // remove old image by ID

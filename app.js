@@ -33,6 +33,11 @@ app.use(methodOverride("_method"));
 
 app.use(bodyParser.json());
 
+app.use("/public", express.static("public"));
+
+// Avoid this if /image is being served dynamically:
+app.use(express.static("public")); // could block /image
+
 //session, session ini mengandung logic, ini adalah basic
 // app.use(
 //   session({

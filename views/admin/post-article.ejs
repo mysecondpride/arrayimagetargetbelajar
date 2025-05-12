@@ -11,14 +11,12 @@
     <p><%=data.body %></p>
 
     <div>
-      <% if (data.file && data.file.fileId) { %>
+      <% data.file.forEach(filex => { %>
       <img
-        src="/image/<%= data.file.fileId %>"
-        alt="<%= data.file.filename %>"
-        style="width: 300px; height: 200px; margin-top: 20px"
+        src="/image/<%= filex._id.toString() %>"
+        alt="<%= filex.filename %>"
       />
-
-      <% } %>
+      <% }) %>
     </div>
   </body>
 </html>
