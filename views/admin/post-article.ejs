@@ -11,9 +11,9 @@
     <p><%=data.body %></p>
 
     <div>
-      <% data.file.forEach(filex => { %>
+      <% data.files.forEach(filex => { %>
       <img
-        src="/image/<%= filex._id.toString() %>"
+        src="/image/<%= filex.fileId.toString() %>"
         alt="<%= filex.filename %>"
       />
       <% }) %>

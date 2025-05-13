@@ -181,6 +181,7 @@ router.post("/add-post", uploads.array("utama", 10), async (req, res) => {
 
     // Process uploaded files into fileSchema format
     const files = req.files?.map((file) => ({
+      fileId: new mongoose.Types.ObjectId(file.id), // ← This is the GridFS _id
       filename: file.filename,
       fileType: file.mimetype,
       url: `/files/${file.filename}`, // or custom download route
@@ -193,6 +194,8 @@ router.post("/add-post", uploads.array("utama", 10), async (req, res) => {
       body,
       files, // your schema expects an array of file objects
     });
+
+    console.log(files);
 
     await ost.save();
 
