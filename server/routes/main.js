@@ -32,11 +32,18 @@ conn.once("open", function () {
 
   // Now you use bucket to upload/download files
 });
+
 router.get("/", async (req, res) => {
   const locals = {
-    title: "Accounting Basis",
-    description:
-      "blog tentang akuntansi | perpajakan | aplikasi pembukuan UMKM ",
+    title: "Jual Media Tanam Berkualitas",
+    description: "Arang Sekam | Cocopeat | Kompost | Compost | Compost Tea ",
+  };
+  res.render("index", { locals });
+});
+router.get("/blog", async (req, res) => {
+  const locals = {
+    title: "Jual Media Tanam Berkualitas",
+    description: "Arang Sekam | Cocopeat | Kompost | Compost | Compost Tea ",
   };
   // router ini untuk melempar data yang sudah kita post
   let perPage = 10;
@@ -49,7 +56,7 @@ router.get("/", async (req, res) => {
   const count = await Post.countDocuments();
   const nextPage = parseInt(page) + 1;
   const hasNextPage = nextPage <= Math.ceil(count / perPage);
-  res.render("index", {
+  res.render("blog", {
     locals,
     data,
     current: page,
@@ -62,9 +69,8 @@ router.get("/about", (req, res) => {
 
 router.get("/post/:id", async (req, res) => {
   const locals = {
-    title: "Accounting Basis",
-    description:
-      "blog tentang akuntasi | laporan keuangan | aplikasi pembukuan untuk UMKM ",
+    title: "Jual Media Tanam Berkualitas",
+    description: "Arang Sekam | Cocopeat | Kompost | Compost | Compost Tea ",
   };
   const slug = req.params.id;
   const data = await Post.findById(slug);
@@ -78,8 +84,7 @@ router.post("/search", async (req, res) => {
   try {
     const locals = {
       title: "Search",
-      description:
-        "Blog yang mengulas semua hal tentang telepon dan teknologi kekinian",
+      description: "Menjual Media Tanam Berkualitas",
     };
     const searchTerm = req.body.searchTerm;
     const noSpecialChar = searchTerm.replace(/[^a-zA-Z0-9]/g, "");

@@ -1,6 +1,5 @@
 //connectdengan env
 require("dotenv").config();
-const archiver = require("archiver");
 
 //router penghubung ke database
 const express = require("express");
@@ -33,6 +32,7 @@ const methodOverride = require("method-override");
 router.use(methodOverride("_method"));
 const uploads = require("../../utils/gridFs"); // Import GridFS upload
 const { GridFsStorage } = require("multer-gridfs-storage");
+const PostProducts = require("../models/PostProducts");
 
 //how to connect by connection string
 const conn = mongoose.createConnection(process.env.MONGODB_URI);
@@ -62,17 +62,6 @@ router.get("/admin", async (req, res) => {
 /* POST */
 /* Check-Login */
 
-// router.post("/admin", async (req, res) => {
-//   try {
-//     if (req.body.username === "admin" && req.body.password === "password") {
-//       res.send("you are logg in");
-//     } else {
-//       res.send("your username and password doesnt match");
-//     }
-//   } catch (error) {
-//     console.log("error", error);
-//   }
-// });
 router.post("/admin", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -208,16 +197,6 @@ router.post("/add-post", uploads.array("utama", 10), async (req, res) => {
   }
 });
 
-// router.get("/image/:id", (req, res) => {
-//   gfs.find({ filename: req.params.id }).toArray((err, files) => {
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({ err: "File not found" });
-//     }
-
-//     gfs.openDownloadStreamByName(req.params.id).pipe(res);
-//   });
-// });
-
 router.get("/image/:id", (req, res) => {
   try {
     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
@@ -243,157 +222,6 @@ router.get("/image/:id", (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-//ini tidak bisa
-// router.get("/image/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-//       bucketName: "uploads",
-//     });
-
-//     // 1. Validate ID format
-//     if (!mongoose.Types.ObjectId.isValid(id)) {
-//       return res.status(400).json({ message: "Invalid ID format" });
-//     }
-
-//     const fileId = new mongoose.Types.ObjectId(id);
-
-//     // 2. Check if file exists and get metadata
-//     const files = await bucket.find({ _id: fileId }).toArray();
-//     if (files.length === 0) {
-//       return res.status(404).json({ message: "File not found" });
-//     }
-
-//     const file = files[0];
-
-//     // 3. Set headers using metadata
-//     res.set({
-//       "Content-Type": file.contentType || "image/jpeg",
-//       "Content-Length": file.length,
-//     });
-
-//     // 4. Stream the file
-//     const downloadStream = bucket.openDownloadStream(fileId);
-//     downloadStream.pipe(res);
-
-//     downloadStream.on("error", (err) => {
-//       console.error("Stream error:", err);
-//       if (!res.headersSent) {
-//         res.status(500).json({ message: "Error streaming file" });
-//       }
-//     });
-//   } catch (err) {
-//     console.error("Route error:", err.message);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
-
-// router.get("/image/:id", async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-//       bucketName: "uploads",
-//     });
-
-//     // Validate ID format first
-//     if (!mongoose.Types.ObjectId.isValid(id)) {
-//       return res.status(400).json({ message: "Invalid ID format" });
-//     }
-
-//     const fileId = new mongoose.Types.ObjectId(id);
-
-//     // Check if file exists and get metadata
-//     const files = await bucket.find({ _id: fileId }).toArray();
-//     if (!files.length) {
-//       return res.status(404).json({ message: "File not found" });
-//     }
-
-//     const [file] = files;
-
-//     // Set Content-Type from metadata
-//     res.set("Content-Type", file.contentType || "image/jpeg"); // Fix "jpg" to "jpeg"
-
-//     const stream = bucket.openDownloadStream(fileId);
-//     stream.pipe(res);
-
-//     stream.on("error", (err) => {
-//       console.error("Stream error:", err.message);
-//       res.status(404).json({ message: "File not found" });
-//     });
-//   } catch (err) {
-//     console.error("Route error:", err.message);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
-
-// router.get("/image/:id", async (req, res) => {
-//   try {
-//     const fileId = new mongoose.Types.ObjectId(req.params.id);
-
-//     // ✅ First, define the collection
-//     const filesCollection = mongoose.connection.db.collection("upload.files");
-
-//     // ✅ Then, initialize the GridFS bucket
-//     bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-//       bucketName: "upload",
-//     });
-
-//     // ✅ Now use the collection to find the file metadata
-//     const file = await filesCollection.findOne({ _id: fileId });
-
-//     if (!file || !file.contentType.startsWith("image/")) {
-//       return res.status(404).send("Not an image");
-//     }
-
-//     // ✅ Set content type and stream the image
-//     res.set("Content-Type", file.contentType);
-//     const readStream = bucket.openDownloadStream(file._id);
-//     readStream.pipe(res);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send("Error retrieving image");
-//   }
-// });
-// router.get("/image/:filename", (req, res) => {
-//   gfs.find({ filename: req.params.filename }).toArray((err, files) => {
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({ err: "File not found" });
-//     }
-
-//     gfs.openDownloadStreamByName(req.params.filename).pipe(res);
-//   });
-// });
-
-// router.get("/image/zip", async (req, res) => {
-//   const ids = Array.isArray(req.query._id) ? req.query._id : [req.query._id];
-//   const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-//     bucketName: "upload",
-//   });
-
-//   res.setHeader("Content-Type", "application/zip");
-//   res.setHeader("Content-Disposition", "attachment; filename=files.zip");
-
-//   const archive = archiver("zip");
-//   archive.pipe(res);
-
-//   for (const id of ids) {
-//     const objectId = new mongoose.Types.ObjectId(id);
-//     const stream = bucket.openDownloadStream(objectId);
-//     archive.append(stream, { name: `${id}.jpg` }); // You could fetch filename from DB if needed
-//   }
-
-//   archive.finalize();
-// });
-
-// router.get("/files", async (req, res) => {
-//   try {
-//     let files = await gfs.files.find().toArray();
-//     res.json({ files });
-//   } catch (err) {
-//     res.json({ err });
-//   }
-// });
 
 router.get("/edit-post/:id", authMiddleware, async (req, res) => {
   try {
@@ -463,6 +291,277 @@ router.delete("/delete-post/:id", async (req, res) => {
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/display-products", authMiddleware, async (req, res) => {
+  try {
+    const data = await PostProducts.find({});
+    console.log(data, "ini data produk");
+
+    res.render("admin/display-products", { layout: layoutAdmin, data });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: "Something went wrong while you are getting the products.",
+    });
+  }
+});
+
+//segala sesuatu tentang produk
+router.get("/post-display-products", authMiddleware, async (req, res) => {
+  try {
+    const data = await Post.find({});
+
+    res.render("admin/post-display-products", { data, layout: layoutAdmin });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: "Something went wrong while creating the blog post.",
+    });
+  }
+});
+
+router.post(
+  "/post-display-products",
+  authMiddleware,
+  uploads.single("image1"),
+  async (req, res) => {
+    try {
+      const {
+        NamaProduk1,
+        Harga1,
+        Stok1,
+        Keterangan1,
+        NamaProduk2,
+        Harga2,
+        Stok2,
+        Keterangan2,
+        NamaProduk3,
+        Harga3,
+        Stok3,
+        Keterangan3,
+      } = req.body;
+
+      const brankas = [
+        NamaProduk1,
+        Harga1,
+        Stok1,
+        Keterangan1,
+        NamaProduk2,
+        Harga2,
+        Stok2,
+        Keterangan2,
+        NamaProduk3,
+        Harga3,
+        Stok3,
+        Keterangan3,
+      ];
+
+      if (!brankas) {
+        return res.status(400).json({
+          message: "Semua field product diisi dulu ya",
+        });
+      }
+
+      const fileSingle = {
+        fileId: file.id,
+        filename: file.filename,
+        url: `/files/${file.filename}`,
+        fileType: file.mimetype,
+        uploadedAt: new Date(),
+      };
+
+      console.log("FILES RECEIVED:", req.file);
+      const ost = new PostProducts({
+        Produk1: [
+          {
+            NamaProduk1,
+            Harga1,
+            Stok1,
+            Keterangan1,
+            fileImages: fileSingle.image1,
+          },
+        ],
+        Produk2: [
+          {
+            NamaProduk2,
+            Harga2,
+            Stok2,
+            Keterangan2,
+            // fileImages: fileSingle.Produk2Files,
+          },
+        ],
+        Produk3: [
+          {
+            NamaProduk3,
+            Harga3,
+            Stok3,
+            Keterangan3,
+            // fileImages: fileSingle.Produk3Files,
+          },
+        ],
+      });
+      await ost.save();
+      res.status(201).json({ message: "PostProducts created!", ost });
+
+      // res.redirect("admin/display-products");
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({
+        error: "Something went wrong while creating the blog post.",
+      });
+    }
+  }
+);
+
+//images untuk produk pada post-display-product
+
+// router.get(
+//   "/imagesofproducts/:postId/:itemId",
+//   authMiddleware,
+//   async (req, res) => {
+//     const { postId, itemId } = req.params;
+
+//     // disini harus ada pull nya..
+//     try {
+//       const updatedPost = await PostProducts.findByIdAndUpdate(
+//         postId,
+//         { $pull: { files: { _id: itemId } } },
+//         { new: true }
+//       );
+
+//       if (!updatedPost) {
+//         return res.status(404).json({ message: "Post not found" });
+//       }
+
+//       // Convert string to MongoDB ObjectId
+//       const fileId = new mongoose.Types.ObjectId(itemId);
+//       const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+//         bucketName: "uploads", // important: must match the bucket used when uploading
+//       });
+
+//       const stream = bucket.openDownloadStream(fileId);
+
+//       stream.on("file", (file) => {
+//         res.set("Content-Type", file.contentType || "application/octet-stream");
+//       });
+
+//       stream.on("error", (err) => {
+//         console.error("Download stream error:", err.message);
+//         if (!res.headersSent) {
+//           res.status(404).json({ message: "File not found" });
+//         }
+//       });
+
+//       stream.pipe(res);
+//     } catch (err) {
+//       return res.status(400).json({ message: "Invalid file ID" });
+//     }
+//   }
+// );
+
+router.get(
+  "/imagesofproducts/:postId/:itemId",
+  authMiddleware,
+  async (req, res) => {
+    const { postId, itemId } = req.params;
+
+    try {
+      // First, verify the file belongs to the post
+      const post = await PostProducts.findOne({
+        _id: postId,
+        "files._id": itemId,
+      });
+
+      if (!post) {
+        return res.status(404).json({ message: "Post or file not found" });
+      }
+
+      const fileId = new mongoose.Types.ObjectId(itemId);
+      const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+        bucketName: "uploads", // same bucket name used when uploading
+      });
+
+      const stream = bucket.openDownloadStream(fileId);
+
+      stream.on("file", (file) => {
+        res.set("Content-Type", file.contentType || "application/octet-stream");
+      });
+
+      stream.on("error", (err) => {
+        console.error("Stream error:", err);
+        if (!res.headersSent) {
+          res.status(404).json({ message: "File not found in GridFS" });
+        }
+      });
+
+      stream.pipe(res);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
+
+router.delete("/delete-item1/:postId/:itemId", async (req, res) => {
+  const { postId, itemId } = req.params;
+
+  try {
+    const updatedPost = await PostProducts.findByIdAndUpdate(
+      postId,
+      { $pull: { Produk1: { _id: itemId } } },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.redirect("/display-products");
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: "Error deleting nested item" });
+  }
+});
+router.delete("/delete-item2/:postId/:itemId", async (req, res) => {
+  const { postId, itemId } = req.params;
+
+  try {
+    const updatedPost = await PostProducts.findByIdAndUpdate(
+      postId,
+      { $pull: { Produk2: { _id: itemId } } },
+      { new: true }
+    );
+
+    if (!updatedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.redirect("/display-products");
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: "Error deleting nested item" });
+  }
+});
+
+router.delete("/delete-item3/:postId/:itemId", async (req, res) => {
+  const { postId, itemId } = req.params;
+
+  try {
+    const updatedPost = await PostProducts.findByIdAndUpdate(
+      postId,
+      { $pull: { Produk3: { _id: itemId } } },
+      { new: true }
+    );
+    if (!updatedPost) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    res.redirect("/display-products");
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ message: "Error deleting nested item" });
   }
 });
 

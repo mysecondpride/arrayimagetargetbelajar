@@ -1,4 +1,4 @@
-// config/storage.js
+// config / storage.js;
 const multer = require("multer");
 const { GridFsStorage } = require("multer-gridfs-storage");
 const crypto = require("crypto");
